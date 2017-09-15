@@ -1,0 +1,86 @@
+# contains metrics for evaluating the quality of an NN solution
+
+import numpy as np 
+from skimage import morphology
+from scipy import ndimage as ndi
+
+
+def intersection_over_union(y_true, y_pred):
+    """Computes the intersection over union of to arrays containing 1's and 0's
+
+    Assumes y_true has converted from real value to binary values. 
+    """
+
+    if np.sum(y_true == 1) + np.sum(y_true == 0) != y_true.shape[0]*y_true.shape[1]:
+        raise ValueError('Groud truth mask must only contain values from the set {0,1}')
+
+    if np.sum(y_pred == 1) + np.sum(y_pred == 0) != y_pred.shape[0]*y_pred.shape[1]:
+        raise ValueError('Segmentation mask must only contain values from the set {0,1}')
+
+    if y_true.ndim != 2:
+        if y_true.shape[2] != 1 or y_true.shape[2] != 0:
+            raise ValueError('Too many ground truth masks are present')
+
+    if y_pred.ndim != 2:
+        if y_pred.shape[2] != 1 or y_pred.shape[2] != 0:
+            raise ValueError('too many segmentation masks are present')
+
+    if y_pred.shape != y_true.shape:
+        raise ValueError('The dimensions of y_true, and y_pred are not the same')
+
+    intersection = np.sum(y_true * y_pred).astype(np.float)
+    union = np.sum(np.clip(y_true + y_pred, 0, 1)).astype(np.float)
+
+    # Alternatively we can return some small value epsilon
+    if union == 0:
+        # return 1e-10
+        return 0
+
+    else:
+        return intersection/union # + 1e-10
+
+
+def jaccard_distance(y_true, y_pred):
+    return 1 - intersection_over_union(y_true, y_pred)
+
+
+def average_squared_distance(y_true, y_pred):
+    if y_pred.shape != y_true.shape:
+        raise ValueError('The dimensions of y_true, and y_pred are not the same')
+
+    return np.sqrt(np.sum(np.power(y_true - y_pred, 2)))
+
+
+def average_squared_log_distance(y_true, y_pred):
+    if y_pred.shape != y_true.shape:
+        raise ValueError('The dimensions of y_true, and y_pred are not the same')
+    
+    dist = np.abs(y_true-y_pred) 
+    return np.sqrt(np.sum(np.power(np.log1p(dist), 2)))
+
+
+def get_centroid(seg_mask, slices):
+    sliced = seg_mask[slices]
+    ys, xs = np.where(sliced)
+    
+    # get the centroid coordinates in the original image
+    y_cent = np.round(ys.mean()).astype(np.int) + slices[0].start
+    x_cent = np.round(xs.mean()).astype(np.int) + slices[1].start
+    return y_cent, x_cent
+
+
+def find_largest_obj(seg_mask, objs):
+    counts = list()
+    for slices in objs:
+        counts.append((seg_mask[slices]).sum())
+    max_id = np.argmax(np.array(counts))
+    largest_obj = objs[max_id]
+    return largest_obj
+
+
+def get_centroid_largest_blob(seg_mask):
+    labeled_blobs = ndi.label(seg_mask)
+    objs = ndi.find_objects(labeled_blobs[0])
+    largest_obj = find_largest_obj(seg_mask, objs)
+    return np.array(get_centroid(seg_mask, largest_obj))
+
