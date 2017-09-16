@@ -1,6 +1,6 @@
 from tensorflow.contrib.keras.python import keras
 from tensorflow.contrib.keras.python.keras import layers as l
-from network_definitions.separable_conv2d import SeparableConv2DKeras
+from utils.separable_conv2d import SeparableConv2DKeras
 from functools import partial
 import json
 import os

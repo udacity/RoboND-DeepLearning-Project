@@ -1,7 +1,7 @@
 from tensorflow.contrib.keras.python import keras
 from tensorflow.contrib.keras.python.keras import layers as l
 
-from network_definitions.separable_conv2d import SeparableConv2DKeras
+from utils.separable_conv2d import SeparableConv2DKeras
 
 
 # TODO implement a encode block, it should reduce spatial edge width by half

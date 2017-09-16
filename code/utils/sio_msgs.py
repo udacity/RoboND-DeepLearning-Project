@@ -34,7 +34,7 @@ from io import BytesIO
 from PIL import Image
 
 
-def create_box_marker_msg(id, pose, dims=(1.0,1.0,1.0), color=(0,1,0,0.8), duration=60):
+def create_box_marker_msg(id, pose, dims=(0.7,0.7,2.0), color=(0,0,1,0.1), duration=0.4):
     """ Creates a box marker message to be passed to the simulator.
 
         Args:
@@ -59,7 +59,7 @@ def create_box_marker_msg(id, pose, dims=(1.0,1.0,1.0), color=(0,1,0,0.8), durat
 
 def create_object_detected_msg(position):
     """creates an xyz message of target location"""
-    return {'coords':position} 
+    return {'coords':position}
 
 
 def create_delete_marker_msg(id):
@@ -74,4 +74,3 @@ def create_delete_marker_msg(id):
             dict: JSON message to be emitted as socketio event
     """
     return {'id': id}
-

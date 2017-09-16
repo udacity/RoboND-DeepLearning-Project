@@ -39,11 +39,14 @@ from scipy import misc
 
 import cv2
 from socketIO_client import SocketIO, LoggingNamespace
+from transforms3d.euler import euler2mat, mat2euler
 
 import make_model
 from utils import data_iterator
 from utils import preprocess_ims
 from utils import visualization
+from utils import scoring_utils
+from utils import sio_msgs
 
 
 def to_radians(deg_ang):
@@ -93,10 +96,46 @@ class Follower(object):
                     misc.imsave(out_file, result)
                     self.last_time_saved = time.time()
 
-            # centroid = scoring_utils.get_centroid_largest_blob(target_mask)
+            centroid = scoring_utils.get_centroid_largest_blob(target_mask)
 
             # scale the centroid from the nn image size to the original image size
-            # centroid = centroid.astype(np.int).tolist()
+            centroid = centroid.astype(np.int).tolist()
+
+            # Obtain 3D world point from centroid pixel
+            depth_img = get_depth_image(data['depth_image'])
+
+            # Get XYZ coordinates for specific pixel
+            pixel_depth = depth_img[centroid[0]][centroid[1]][0]*100/255.0
+            point_3d = get_xyz_from_image(centroid[0], centroid[1], pixel_depth)
+            point_3d.append(1)
+            #print("Pixel Depth: ", pixel_depth)
+            #print ("Hit point: ", point_3d)
+
+            # Get cam_pose from sensor_frame (ROS convention)
+            cam_pose = get_ros_pose(data['gimbal_pose'])
+            #print ("Quad Pose: ", cam_pose)
+
+            # Calculate xyz-world coordinates of the point corresponding to the pixel
+            # Transformation Matrix
+            R = euler2mat(math.radians(cam_pose[3]), math.radians(cam_pose[4]), math.radians(cam_pose[5]))
+            T = np.c_[R, cam_pose[:3]]
+            T = np.vstack([T, [0,0,0,1]]) # transformation matrix from world to quad
+
+            # 3D point in ROS coordinates
+            ros_point = np.dot(T, point_3d)
+
+            socketIO.emit('object_detected', {'coords': [ros_point[0], ros_point[1], ros_point[2]]})
+            self.target_found = True
+            self.num_no_see = 0
+
+            # Publish Hero Marker
+            marker_pos = [ros_point[0],ros_point[1], ros_point[2]] + [0, 0, 0]
+            marker_msg = sio_msgs.create_box_marker_msg(np.random.randint(99999), marker_pos)
+            socketIO.emit('create_box_marker', marker_msg)
+
+            # 3D point in Unity coordinates
+            #unity_point = get_unity_pose_from_ros(ros_point)
+            #print ros_point.shape
 
             # with the depth image, and centroid from prediction we can compute
             # the x,y,z coordinates where the ray intersects an object
@@ -114,12 +153,6 @@ class Follower(object):
             # rotate array
             # ray = np.dot(rot, np.array(ray))
 
-            # marker_pos = (pose[:3] + ray).tolist() + [0, 0, 0]
-            # marker_msg = sio_msgs.create_box_marker_msg(np.random.randint(99999), marker_pos)
-            # socketIO.emit('create_box_marker', marker_msg)
-            socketIO.emit('object_detected', {'coords': [0, 0, 0]})
-            self.target_found = True
-            self.num_no_see = 0
 
         elif self.target_found:
             self.num_no_see += 1
@@ -140,6 +173,32 @@ def on_connect():
 
 def on_reconnect():
     print('reconnect')
+
+# Functions for 2D->3D transformation 
+def get_depth_image(data):
+    pimg = Image.open(BytesIO(base64.b64decode(data)))
+    img_array = np.array(pimg)
+    return img_array
+
+def get_xyz_from_image(u, v, depth):
+    cx = 128
+    cy = 128
+    fx = 224
+    fy = 224
+    x = (u-cx)*depth/fx
+    y = (v-cy)*depth/fy
+    return [depth,-x,y]
+
+def get_ros_pose(data):
+    s_pose = data.split(",")
+    ros_pose = [float(i) for i in s_pose]
+    for i in range(3,6):
+        if ros_pose[i]<-180: ros_pose[i] = 360 + ros_pose[i]
+    return ros_pose
+
+def get_unity_pose_from_ros(data):
+    unity_point = [-data[1],data[2],data[0]]
+    return unity_point
 
 
 if __name__ == '__main__':

@@ -10,21 +10,21 @@ In this project, you will train a deep neural network to identify and track a ta
 ## Setup Instructions
 **Clone the repository**
 ```
-$ git clone https://github.com/udacity/RoboND-DeepLearning-Private.git
+$ git clone https://github.com/udacity/RoboND-DeepLearning.git
 ```
 
 **Download the QuadSim binary**
 
 To interface your neural net with the QuadSim simulator, you must use a version QuadSim that has been custom tailored for this project. The previous version that you might have used for the Controls lab will not work.
 
-The simulator binary can be downloaded [here](https://github.com/udacity/RoboND-DeepLearning-Private/releases)
+The simulator binary can be downloaded [here](https://github.com/udacity/RoboND-DeepLearning/releases/latest)
 
 **Install Dependencies**
 
 You'll need Python 3 and Jupyter Notebooks installed to do this project.  The best way to get setup with these if you are not already is to use Anaconda following along with the [RoboND-Python-Starterkit](https://github.com/ryan-keenan/RoboND-Python-Starterkit).
 
-If for some reason you choose not to use Anaconda, you must install the following framworks and packages on your system:
-* Python 2.7
+If for some reason you choose not to use Anaconda, you must install the following frameworks and packages on your system:
+* Python 3.x
 * Tensorflow 1.2.1
 * NumPy 1.11
 * OpenCV 2
@@ -36,18 +36,19 @@ If for some reason you choose not to use Anaconda, you must install the followin
 * python-socketio
 * scikit-image
 * socketIO-client
+* transforms3d
 
 ## Implement the Segmentation Network
-1. Download the training dataset from [here](https://github.com/udacity/RoboND-DeepLearning-Private/releases), and extract to the project `data` directory.
+1. Download the training dataset from [here](https://github.com/udacity/RoboND-DeepLearning/tree/master/data), and extract to the project `data` directory.
 2. Complete `make_model.py`by following the TODOs in `make_model_template.py`
 3. Complete `data_iterator.py` by following the TODOs in `data_iterator_template.py`
 4. Complete `train.py` by following the TODOs in `train_template.py`
 5. Train the network locally, or on [AWS](docs/aws_setup.md).
-6. Continue to experiement with the training data and network until you attain the score you desire.
+6. Continue to experiment with the training data and network until you attain the score you desire.
 7. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
 
 ## Collecting Training Data ##
-A simple training dataset has been provided in the [releases](https://github.com/udacity/RoboND-DeepLearning-Private/releases) section of this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.
+A simple training dataset has been provided in the [releases](https://github.com/udacity/RoboND-DeepLearning/tree/master/data) section of this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.
 
 The data directory is organized as  follows:
 ```
@@ -65,7 +66,7 @@ data/weights - contains trained TensorFlow models
 3. Select `With Other Poeple`
 4. Click the `DL Training` button
 5. With the simulator running, press "r" to begin recording.
-6. In the file slection menu navigate to the `data/train/target/hero_train1` directory
+6. In the file selection menu navigate to the `data/train/target/run1` directory
 7. **optional** to speed up data collection, press "9" (1-9 will slow down collection speed)
 8. When you have finished collecting data, hit "r" to stop recording.
 9. To exit the simulator, hit "`<esc>`"
@@ -76,7 +77,7 @@ data/weights - contains trained TensorFlow models
 3. Select `With Other Poeple`
 4. Click the `DL Training` button
 5. With the simulator running, press "r" to begin recording.
-6. In the file slection menu navigate to the `data/train/non_target/run_train1` directory.
+6. In the file selection menu navigate to the `data/train/non_target/run1` directory.
 7. **optional** to speed up data collection, press "9"  (1-9 will slow down collection speed)
 8. When you have finished collecting data, hit "r" to stop recording.
 9. To exit the simulator, hit "`<esc>`"
@@ -94,7 +95,7 @@ $ python preprocess_ims.py
 **Note**: If your data is stored as suggested in the steps above, this script should run without error.
 
 ## Training, Predicting and Scoring ##
-With your training and validation data having been generated (or downloaded from the [releases](https://github.com/udacity/RoboND-DeepLearning-Private/releases) section of this repository, you are free to begin working with the neural net.
+With your training and validation data having been generated (or downloaded from the [releases](https://github.com/udacity/RoboND-DeepLearning/tree/master/data) section of this repository, you are free to begin working with the neural net.
 
 **Note**: Training CNNs is a very compute-intensive process. If your system does not have a recent Nvidia graphics card, with [cuDNN](https://developer.nvidia.com/cudnn) installed , you may need to perform the training step in the cloud. Instructions for using AWS to train your network in the cloud may be found [here](docs/aws_setup.md)
 
@@ -107,7 +108,7 @@ To train, simply run the training script, `train.py`, giving it the name of the 
 ```
 $ python train.py my_amazing_model.h5
 ```
-After the trianing run has completed, your model will be stored in the `data/weights` directory as an [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) file.
+After the training run has completed, your model will be stored in the `data/weights` directory as an [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) file.
 
 ### Predicting on the Validation Set and Evaluating the Results ###
 **Prerequisites**
@@ -153,6 +154,6 @@ average squared log pixel distance error 1.4663195103
 1. Copy your saved model to the weights directory `data/weights`.
 2. Launch the simulator, select "Spawn People", and then click the "Follow Me" button. 
 3. Run `server.py` to launch the socketio server.
-4. Run the relatime follower script `$ realtime_follower.py my_awesome_model`
+4. Run the realtime follower script `$ realtime_follower.py my_awesome_model.h5`
 
 **Note:** If you'd like to see an overlay of the detected region on each camera frame from the drone, simply pass the `--overlay_viz` parameter to `realtime_follower.py`

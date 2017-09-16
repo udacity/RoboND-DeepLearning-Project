@@ -24,7 +24,7 @@ if __name__ == '__main__':
     make_dir_if_not_exist(output_path)
     model = make_model.make_example_model()
     model.load_weights(os.path.join('..', 'data', 'weights', model_file))
-
+    
     data_folder = os.path.join('..', 'data', 'validation')
     file_names = sorted(glob.glob(os.path.join(data_folder, 'images', '*.jpeg')))
 
