@@ -13,6 +13,14 @@ In this project, you will train a deep neural network to identify and track a ta
 $ git clone https://github.com/udacity/RoboND-DeepLearning.git
 ```
 
+**Download the data**
+
+Save the following two files into the data folder of the cloned repository. 
+
+[Training Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/train.zip) 
+
+[Validation Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/validation.zip)
+
 **Download the QuadSim binary**
 
 To interface your neural net with the QuadSim simulator, you must use a version QuadSim that has been custom tailored for this project. The previous version that you might have used for the Controls lab will not work.
@@ -39,7 +47,7 @@ If for some reason you choose not to use Anaconda, you must install the followin
 * transforms3d
 
 ## Implement the Segmentation Network
-1. Download the training dataset from [here](https://github.com/udacity/RoboND-DeepLearning/tree/master/data), and extract to the project `data` directory.
+1. Download the training dataset from above and extract to the project `data` directory.
 2. Complete `make_model.py`by following the TODOs in `make_model_template.py`
 3. Complete `data_iterator.py` by following the TODOs in `data_iterator_template.py`
 4. Complete `train.py` by following the TODOs in `train_template.py`
@@ -48,7 +56,7 @@ If for some reason you choose not to use Anaconda, you must install the followin
 7. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
 
 ## Collecting Training Data ##
-A simple training dataset has been provided in the [releases](https://github.com/udacity/RoboND-DeepLearning/tree/master/data) section of this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.
+A simple training dataset has been provided above in this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.
 
 The data directory is organized as  follows:
 ```
@@ -95,7 +103,7 @@ $ python preprocess_ims.py
 **Note**: If your data is stored as suggested in the steps above, this script should run without error.
 
 ## Training, Predicting and Scoring ##
-With your training and validation data having been generated (or downloaded from the [releases](https://github.com/udacity/RoboND-DeepLearning/tree/master/data) section of this repository, you are free to begin working with the neural net.
+With your training and validation data having been generated or downloaded from the above section of this repository, you are free to begin working with the neural net.
 
 **Note**: Training CNNs is a very compute-intensive process. If your system does not have a recent Nvidia graphics card, with [cuDNN](https://developer.nvidia.com/cudnn) installed , you may need to perform the training step in the cloud. Instructions for using AWS to train your network in the cloud may be found [here](docs/aws_setup.md)
 
