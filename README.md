@@ -2,7 +2,7 @@
 
 ## Deep Learning Project ##
 
-In this project, you will train a deep neural network to identify and track a target in simulation and then issue commands to a drone to follow that target. So-called “follow me” applications like this are key to many fields of robotics and the very same techniques you apply here could be extended to scenarios like advanced cruise control in autonomous vehicles or human-robot collaboration in industry.
+In this project, you will train a deep neural network to identify and track a target in simulation. So-called “follow me” applications like this are key to many fields of robotics and the very same techniques you apply here could be extended to scenarios like advanced cruise control in autonomous vehicles or human-robot collaboration in industry.
 
 [image_0]: ./docs/misc/sim_screenshot.png
 ![alt text][image_0] 
@@ -29,13 +29,12 @@ The simulator binary can be downloaded [here](https://github.com/udacity/RoboND-
 
 **Install Dependencies**
 
-You'll need Python 3 and Jupyter Notebooks installed to do this project.  The best way to get setup with these if you are not already is to use Anaconda following along with the [RoboND-Python-Starterkit](https://github.com/ryan-keenan/RoboND-Python-Starterkit).
+You'll need Python 3 and Jupyter Notebooks installed to do this project.  The best way to get setup with these if you are not already is to use Anaconda following along with the [RoboND-Python-Starterkit](https://github.com/udacity/RoboND-Python-StarterKit).
 
 If for some reason you choose not to use Anaconda, you must install the following frameworks and packages on your system:
 * Python 3.x
 * Tensorflow 1.2.1
 * NumPy 1.11
-* OpenCV 2
 * SciPy 0.17.0
 * eventlet 
 * Flask
@@ -43,13 +42,12 @@ If for some reason you choose not to use Anaconda, you must install the followin
 * PIL
 * python-socketio
 * scikit-image
-* socketIO-client
 * transforms3d
+* PyQt4/Pyqt5
 
 ## Implement the Segmentation Network
 1. Download the training dataset from above and extract to the project `data` directory.
-2. Complete `make_model.py`by following the TODOs in `make_model_template.py`
-3. Complete `data_iterator.py` by following the TODOs in `data_iterator_template.py`
+2. Complete `project_nn_lib.py`by following the TODOs in `project_nn_lib_template.py`
 4. Complete `train.py` by following the TODOs in `train_template.py`
 5. Train the network locally, or on [AWS](docs/aws_setup.md).
 6. Continue to experiment with the training data and network until you attain the score you desire.
@@ -68,35 +66,24 @@ data/validation/masks - contains masked (labeled) images for the validation set
 data/weights - contains trained TensorFlow models
 ```
 
-### Training Set: with Hero Present ###
+### Training Set ###
 1. Run QuadSim
-2. Select `Use Hero Target`
-3. Select `With Other Poeple`
-4. Click the `DL Training` button
-5. With the simulator running, press "r" to begin recording.
-6. In the file selection menu navigate to the `data/train/target/run1` directory
-7. **optional** to speed up data collection, press "9" (1-9 will slow down collection speed)
-8. When you have finished collecting data, hit "r" to stop recording.
-9. To exit the simulator, hit "`<esc>`"
+2. Click the `DL Training` button
+3. Set patrol points, path points, and spawn points. **TODO** add link to data collection doc
+3. With the simulator running, press "r" to begin recording.
+4. In the file selection menu navigate to the `data/train/run1` directory
+5. **optional** to speed up data collection, press "9" (1-9 will slow down collection speed)
+6. When you have finished collecting data, hit "r" to stop recording.
+7. To reset the simulator, hit "`<esc>`"
+8. To collect multiple runs create directories `data/train/run2`, `data/train/run3` and repeat the above steps.
 
-### Training Set: without Hero Present ###
-1. Run QuadSim
-2. Make sure `Use Hero Target` is **NOT** selected
-3. Select `With Other Poeple`
-4. Click the `DL Training` button
-5. With the simulator running, press "r" to begin recording.
-6. In the file selection menu navigate to the `data/train/non_target/run1` directory.
-7. **optional** to speed up data collection, press "9"  (1-9 will slow down collection speed)
-8. When you have finished collecting data, hit "r" to stop recording.
-9. To exit the simulator, hit "`<esc>`"
 
 ### Validation Set ###
 To collect the validation set, repeat both sets of steps above, except using the directory `data/validation` instead rather than `data/train`.
 
 ### Image Preprocessing ###
-Before the network is trained, the images first need to be undergo a preprocessing step.
-**TODO**: Explain what preprocessing does, approximately.
-To run preprocesing:
+Before the network is trained, the images first need to be undergo a preprocessing step. The preprocessing step transforms the depth masks from the sim, into binary masks suitable for training a neural network. It also converts the images from .png to .jpeg to create a reduced sized dataset, suitable for uploading to AWS. 
+To run preprocessing:
 ```
 $ python preprocess_ims.py
 ```
@@ -105,7 +92,7 @@ $ python preprocess_ims.py
 ## Training, Predicting and Scoring ##
 With your training and validation data having been generated or downloaded from the above section of this repository, you are free to begin working with the neural net.
 
-**Note**: Training CNNs is a very compute-intensive process. If your system does not have a recent Nvidia graphics card, with [cuDNN](https://developer.nvidia.com/cudnn) installed , you may need to perform the training step in the cloud. Instructions for using AWS to train your network in the cloud may be found [here](docs/aws_setup.md)
+**Note**: Training CNNs is a very compute-intensive process. If your system does not have a recent Nvidia graphics card, with [cuDNN](https://developer.nvidia.com/cudnn) and [CUDA](https://developer.nvidia.com/cuda) installed , you may need to perform the training step in the cloud. Instructions for using AWS to train your network in the cloud may be found [here](docs/aws_setup.md)
 
 ### Training your Model ###
 **Prerequisites**
@@ -160,8 +147,10 @@ average squared log pixel distance error 1.4663195103
 
 ## Experimentation: Testing in Simulation
 1. Copy your saved model to the weights directory `data/weights`.
-2. Launch the simulator, select "Spawn People", and then click the "Follow Me" button. 
-3. Run `server.py` to launch the socketio server.
-4. Run the realtime follower script `$ realtime_follower.py my_awesome_model.h5`
+2. Launch the simulator, select "Spawn People", and then click the "Follow Me" button.
+3. Run the realtime follower script
+```
+$ python follower.py my_amazing_model.h5
+```
 
-**Note:** If you'd like to see an overlay of the detected region on each camera frame from the drone, simply pass the `--overlay_viz` parameter to `realtime_follower.py`
+**Note:** If you'd like to see an overlay of the detected region on each camera frame from the drone, simply pass the `--pred_viz` parameter to `follower.py`

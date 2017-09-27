@@ -23,18 +23,22 @@ from tensorflow.contrib.keras.python.keras import regularizers
 from tensorflow.contrib.keras.python.keras.engine import InputSpec
 from tensorflow.contrib.keras.python.keras.engine import Layer
 from tensorflow.contrib.keras.python.keras.utils.generic_utils import get_custom_objects 
+from tensorflow.contrib.keras.python.keras.utils import conv_utils
 
 from tensorflow.python.layers import base
 from tensorflow.python.layers import utils
 from tensorflow.python.layers import convolutional as tf_convolutional_layers
 
+from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import gen_nn_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import nn
 
+import numpy as np
 
 # pylint: disable=redefined-builtin,line-too-long
 def separable_conv2d_tf_nn(input,
@@ -532,5 +536,109 @@ class SeparableConv2DKeras(SeparableConv2DTfLayers, Layer):
     return dict(list(base_config.items()) + list(config.items()))
 
 
+def resize_images_bilinear(x, height_factor, width_factor, data_format):
+  """Resizes the images contained in a 4D tensor.
+  Arguments:
+      x: Tensor or variable to resize.
+      height_factor: Positive integer.
+      width_factor: Positive integer.
+      data_format: One of `"channels_first"`, `"channels_last"`.
+  Returns:
+      A tensor.
+  Raises:
+      ValueError: if `data_format` is neither
+          `channels_last` or `channels_first`.
+  """
+  if data_format == 'channels_first':
+    original_shape = K.int_shape(x)
+    new_shape = array_ops.shape(x)[2:]
+    new_shape *= constant_op.constant(
+        np.array([height_factor, width_factor]).astype('int32'))
+    x = permute_dimensions(x, [0, 2, 3, 1])
+    x = image_ops.resize_bilinear(x, new_shape)
+    x = permute_dimensions(x, [0, 3, 1, 2])
+    x.set_shape((None, None, original_shape[2] * height_factor
+                 if original_shape[2] is not None else None,
+                 original_shape[3] * width_factor
+                 if original_shape[3] is not None else None))
+    return x
+  elif data_format == 'channels_last':
+    original_shape = K.int_shape(x)
+    new_shape = array_ops.shape(x)[1:3]
+    new_shape *= constant_op.constant(
+        np.array([height_factor, width_factor]).astype('int32'))
+    x = image_ops.resize_bilinear(x, new_shape)
+    x.set_shape((None, original_shape[1] * height_factor
+                 if original_shape[1] is not None else None,
+                 original_shape[2] * width_factor
+                 if original_shape[2] is not None else None, None))
+    return x
+  else:
+    raise ValueError('Invalid data_format:', data_format)
+
+
+class BilinearUpSampling2D(Layer):
+  """Upsampling layer for 2D inputs.
+  Repeats the rows and columns of the data
+  by size[0] and size[1] respectively.
+  Arguments:
+      size: int, or tuple of 2 integers.
+          The upsampling factors for rows and columns.
+      data_format: A string,
+          one of `channels_last` (default) or `channels_first`.
+          The ordering of the dimensions in the inputs.
+          `channels_last` corresponds to inputs with shape
+          `(batch, height, width, channels)` while `channels_first`
+          corresponds to inputs with shape
+          `(batch, channels, height, width)`.
+          It defaults to the `image_data_format` value found in your
+          Keras config file at `~/.keras/keras.json`.
+          If you never set it, then it will be "channels_last".
+  Input shape:
+      4D tensor with shape:
+      - If `data_format` is `"channels_last"`:
+          `(batch, rows, cols, channels)`
+      - If `data_format` is `"channels_first"`:
+          `(batch, channels, rows, cols)`
+  Output shape:
+      4D tensor with shape:
+      - If `data_format` is `"channels_last"`:
+          `(batch, upsampled_rows, upsampled_cols, channels)`
+      - If `data_format` is `"channels_first"`:
+          `(batch, channels, upsampled_rows, upsampled_cols)`
+  """
+
+  def __init__(self, size=(2, 2), data_format=None, **kwargs):
+    super(BilinearUpSampling2D, self).__init__(**kwargs)
+    self.data_format = conv_utils.normalize_data_format(data_format)
+    self.size = conv_utils.normalize_tuple(size, 2, 'size')
+    self.input_spec = InputSpec(ndim=4)
+
+  def _compute_output_shape(self, input_shape):
+    input_shape = tensor_shape.TensorShape(input_shape).as_list()
+    if self.data_format == 'channels_first':
+      height = self.size[0] * input_shape[
+          2] if input_shape[2] is not None else None
+      width = self.size[1] * input_shape[
+          3] if input_shape[3] is not None else None
+      return tensor_shape.TensorShape(
+          [input_shape[0], input_shape[1], height, width])
+    else:
+      height = self.size[0] * input_shape[
+          1] if input_shape[1] is not None else None
+      width = self.size[1] * input_shape[
+          2] if input_shape[2] is not None else None
+      return tensor_shape.TensorShape(
+          [input_shape[0], height, width, input_shape[3]])
+
+  def call(self, inputs):
+    return resize_images_bilinear(inputs, self.size[0], self.size[1], self.data_format)
+
+  def get_config(self):
+    config = {'size': self.size, 'data_format': self.data_format}
+    base_config = super(BilinearUpSampling2D, self).get_config()
+    return dict(list(base_config.items()) + list(config.items()))
+
+
 # add this to custom objects for restoring model save files
-get_custom_objects().update({'SeparableConv2DKeras': SeparableConv2DKeras})
+get_custom_objects().update({'SeparableConv2DKeras': SeparableConv2DKeras, 'BilinearUpsampling2D':BilinearUpSampling2D})

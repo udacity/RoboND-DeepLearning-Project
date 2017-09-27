@@ -1,8 +1,10 @@
 # contains metrics for evaluating the quality of an NN solution
-
 import numpy as np 
 from skimage import morphology
 from scipy import ndimage as ndi
+import glob
+import os 
+from scipy import misc
 
 
 def intersection_over_union(y_true, y_pred):
@@ -83,4 +85,79 @@ def get_centroid_largest_blob(seg_mask):
     objs = ndi.find_objects(labeled_blobs[0])
     largest_obj = find_largest_obj(seg_mask, objs)
     return np.array(get_centroid(seg_mask, largest_obj))
+
+
+def score_run_iou(gt_dir, pred_dir):
+    gt_files = sorted(glob.glob(os.path.join(gt_dir, 'masks', '*.png')))
+    pred_files = sorted(glob.glob(os.path.join(pred_dir, '*.png')))
+    ious = [0,0,0]
+    n_preds = len(gt_files)
+
+    for e, gt_file in enumerate(gt_files):
+        gt_mask = misc.imread(gt_file).clip(0, 1)
+        pred_mask = (misc.imread(pred_files[e]) > 127).astype(np.int)
+
+        if gt_mask.shape[0] != pred_mask.shape[0]:
+            gt_mask = misc.imresize(gt_mask, pred_mask.shape)
+
+        for i in range(3):
+            ious[i] += intersection_over_union(pred_mask[:,:,i], gt_mask[:,:,i])
+
+    background = ious[0] / n_preds
+    hero = ious[1] / n_preds
+    people = ious[2] / n_preds
+
+    average = (background + hero + people)/3
+    print('number of validation samples intersection over the union evaulated on {}'.format(n_preds))
+    print('average intersection over union for background is {}'.format(background))
+    print('average intersection over union for other people is {}'.format(hero))
+    print('average intersection over union for the hero is {}'.format(people))
+    print('global average intersection over union is {}'.format(average))
+
+
+
+def score_run_centroid(gt_dir, pred_dir):
+    gt_files = sorted(glob.glob(os.path.join(gt_dir, 'masks', '*.png')))
+    pred_files = sorted(glob.glob(os.path.join(pred_dir, '*.png')))
+
+    error1 = 0
+    error2 = 0
+    n_valid_detections = 0
+    n_invalid_detections = 0
+    n_missed = 0
+
+    for e, gt_file in enumerate(gt_files):
+        gt_mask = misc.imread(gt_file)[:, :, 1].clip(0, 1)
+        pred_mask = (misc.imread(pred_files[e])[:, :, 1] > 127).astype(np.int)
+        if gt_mask.shape[0] != pred_mask.shape[0]:
+            gt_mask = misc.imresize(gt_mask, pred_mask.shape)
+
+        # there target was in the image
+        if gt_mask.sum() > 3:
+            if pred_mask.sum() > 3:
+                gt_centroid = get_centroid_largest_blob(gt_mask)
+                pred_centroid = get_centroid_largest_blob(pred_mask)
+                error1 += average_squared_distance(pred_centroid, gt_centroid)
+                error2 += average_squared_log_distance(pred_centroid, gt_centroid)
+                n_valid_detections += 1
+            else:
+                n_missed += 1
+
+        # the target was not in the image
+        else:
+            # we got a false positive
+            if pred_mask.sum() > 3:
+                n_invalid_detections += 1
+
+    n_preds = len(gt_files)
+    print('total number of images evaluated on'.format(n_preds))
+
+    print('number of true positives: {}'.format(n_valid_detections))
+    print('number of false positives is: {}'.format(n_invalid_detections))
+    print('number of false negatives is : {}'.format(n_missed))
+
+    if n_valid_detections > 0:
+        print('The following two metrics are only computed on examples where a valid centroid was detected')
+        print('average squared pixel distance error {}'.format(error1 / n_valid_detections))
+        print('average squared log pixel distance error {}'.format(error2 / n_valid_detections))
 
