@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Electric Movement
+# Copyright (c) 2017, Ele ctric Movement
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ import time
 from flask import Flask
 from threading import Thread
 
-
 # Needs to be sorted through
 import argparse
 import base64
@@ -47,8 +46,8 @@ from io import BytesIO
 from scipy import misc
 
 from transforms3d.euler import euler2mat, mat2euler
-
-import project_nn_lib as nnlib
+from tensorflow.contrib.keras.python import keras
+from utils import separable_conv2d
 
 from utils import data_iterator
 from utils import visualization
@@ -196,7 +195,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('weight_file',
+    parser.add_argument('model_file',
                         help='The model file to use for inference')
 
 
@@ -206,9 +205,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    weight_path = os.path.join('..', 'data', 'weights', args.weight_file)
-    model = nnlib.make_model()
-    model.load_weights(weight_path)
+    model_path = os.path.join('..', 'data', 'weights', args.model_file)
+    model = keras.models.load_model(model_path)
     image_hw = model.layers[0].input_shape[1]
 
     if args.pred_viz: 

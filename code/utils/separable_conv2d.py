@@ -641,4 +641,4 @@ class BilinearUpSampling2D(Layer):
 
 
 # add this to custom objects for restoring model save files
-get_custom_objects().update({'SeparableConv2DKeras': SeparableConv2DKeras, 'BilinearUpsampling2D':BilinearUpSampling2D})
+get_custom_objects().update({'SeparableConv2DKeras': SeparableConv2DKeras, 'BilinearUpSampling2D':BilinearUpSampling2D})
