@@ -55,9 +55,9 @@ If for some reason you choose not to use Anaconda, you must install the followin
 5. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
 
 ## Collecting Training Data ##
-A simple training dataset has been provided above in this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.
+A simple training dataset has been provided in this project's repository. This dataset will allow you to verify that your segmentation network is semi-functional. However, if your interested in improving your score,you may want to collect additional training data. To do it, please see the following steps.
 
-The data directory is organized as  follows:
+The data directory is organized as follows:
 ```
 data/runs - contains the results of prediction runs
 data/train/images - contains images for the training set

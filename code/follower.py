@@ -57,6 +57,10 @@ from utils import model_tools
 
 import time
 
+import signal
+import sys
+
+
 # Create socketio server and Flask app
 sio = socketio.Server()
 app = Flask(__name__)
@@ -107,6 +111,7 @@ class Follower(object):
         self.pred_viz_enabled = pred_viz_enabled
         self.target_found = False
 
+
     def on_sensor_frame(self, data):
         rgb_image = Image.open(BytesIO(base64.b64decode(data['rgb_image'])))
         rgb_image = np.asarray(rgb_image)
@@ -124,7 +129,7 @@ class Follower(object):
         if self.pred_viz_enabled:
             self.queue.put([rgb_image, pred])
 
-        target_mask = pred[:, :, 1] > 0.5
+        target_mask = pred[:, :, 2] > 0.5
         # reduce the number of false positives by requiring more pixels to be identified as containing the target
         if target_mask.sum() > 10:
             centroid = scoring_utils.get_centroid_largest_blob(target_mask)
@@ -136,7 +141,7 @@ class Follower(object):
             depth_img = get_depth_image(data['depth_image'])
 
             # Get XYZ coordinates for specific pixel
-            pixel_depth = depth_img[centroid[0]][centroid[1]][0]*100/255.0
+            pixel_depth = depth_img[centroid[0]][centroid[1]][0]*50/255.0
             point_3d = get_xyz_from_image(centroid[0], centroid[1], pixel_depth, self.image_hw)
             point_3d.append(1)
 
@@ -217,5 +222,5 @@ if __name__ == '__main__':
 
     follower = Follower(image_hw, model, args.pred_viz, queue)
     # start eventlet server
-
+    
     sio_server()
