@@ -65,6 +65,9 @@ data/train/masks - contains masked (labeled) images for the training set
 data/validation/images - contains images for the validation set
 data/validation/masks - contains masked (labeled) images for the validation set
 data/weights - contains trained TensorFlow models
+
+data/raw_sim_data/train/run1
+data/raw_sim_data/validation/run1
 ```
 
 ### Training Set ###
@@ -72,15 +75,15 @@ data/weights - contains trained TensorFlow models
 2. Click the `DL Training` button
 3. Set patrol points, path points, and spawn points. **TODO** add link to data collection doc
 3. With the simulator running, press "r" to begin recording.
-4. In the file selection menu navigate to the `data/train/run1` directory
+4. In the file selection menu navigate to the `data/raw_sim_data/train/run1` directory
 5. **optional** to speed up data collection, press "9" (1-9 will slow down collection speed)
 6. When you have finished collecting data, hit "r" to stop recording.
 7. To reset the simulator, hit "`<esc>`"
-8. To collect multiple runs create directories `data/train/run2`, `data/train/run3` and repeat the above steps.
+8. To collect multiple runs create directories `data/raw_sim_data/train/run2`, `data/raw_sim_data/train/run3` and repeat the above steps.
 
 
 ### Validation Set ###
-To collect the validation set, repeat both sets of steps above, except using the directory `data/validation` instead rather than `data/train`.
+To collect the validation set, repeat both sets of steps above, except using the directory `data/raw_sim_data/validation` instead rather than `data/raw_sim_data/train`.
 
 ### Image Preprocessing ###
 Before the network is trained, the images first need to be undergo a preprocessing step. The preprocessing step transforms the depth masks from the sim, into binary masks suitable for training a neural network. It also converts the images from .png to .jpeg to create a reduced sized dataset, suitable for uploading to AWS. 
