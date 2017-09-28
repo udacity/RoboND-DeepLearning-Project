@@ -47,11 +47,10 @@ If for some reason you choose not to use Anaconda, you must install the followin
 
 ## Implement the Segmentation Network
 1. Download the training dataset from above and extract to the project `data` directory.
-2. Complete `project_nn_lib.py`by following the TODOs in `project_nn_lib_template.py`
-4. Complete `train.py` by following the TODOs in `train_template.py`
-5. Train the network locally, or on [AWS](docs/aws_setup.md).
-6. Continue to experiment with the training data and network until you attain the score you desire.
-7. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
+2. Implement your solution in model_training.ipynb
+3. Train the network locally, or on [AWS](docs/aws_setup.md).
+4. Continue to experiment with the training data and network until you attain the score you desire.
+5. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
 
 ## Collecting Training Data ##
 A simple training dataset has been provided above in this repository. This dataset will allow you to verify that you're segmentation network is semi-functional. However, if you're interested in improving your score, you may be interested in collecting additional training data. To do, please see the following steps.

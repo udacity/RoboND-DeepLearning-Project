@@ -46,7 +46,11 @@ def show(im, x=5, y=5):
     
 def show_images(maybe_ims, x=4, y=4):
     if isinstance(maybe_ims, (list, tuple)):
-        new_im = np.concatenate(maybe_ims, axis=1)
+        border = np.ones((maybe_ims[0].shape[0], 10, 3))
+        border = border.astype(np.uint8)
+        new_im = maybe_ims[0]
+        for i in maybe_ims[1:]:
+            new_im = np.concatenate((new_im, border, i), axis=1)
         show(new_im, len(maybe_ims)*x, y)
     else:
         show(maybe_ims)

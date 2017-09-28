@@ -121,6 +121,9 @@ def score_run_iou(gt_dir, pred_dir):
     pred_files = sorted(glob.glob(os.path.join(pred_dir, '*.png')))
     ious = [0,0,0]
     n_preds = len(gt_files)
+    n_true_pos = 0 
+    n_false_neg = 0
+    n_false_pos = 0
 
     for e, gt_file in enumerate(gt_files):
         gt_mask = misc.imread(gt_file).clip(0, 1)
@@ -132,17 +135,27 @@ def score_run_iou(gt_dir, pred_dir):
         for i in range(3):
             ious[i] += intersection_over_union(pred_mask[:,:,i], gt_mask[:,:,i])
 
-    background = ious[0] / n_preds
-    hero = ious[1] / n_preds
-    people = ious[2] / n_preds
 
-    average = (background + hero + people)/3
+        if gt_mask[:,:,2].sum() > 3:
+            if pred_mask[:,:, 2].sum() > 3:
+                n_true_pos += 1
+            else:
+                n_false_neg += 1
+
+        else:
+            if pred_mask[:, :, 2].sum() > 3:
+                n_false_pos += 1
+
+    background = ious[0] / n_preds
+    people = ious[1] / n_preds
+    hero = ious[2] / n_preds
+
     print('number of validation samples intersection over the union evaulated on {}'.format(n_preds))
     print('average intersection over union for background is {}'.format(background))
-    print('average intersection over union for other people is {}'.format(hero))
-    print('average intersection over union for the hero is {}'.format(people))
-    print('global average intersection over union is {}'.format(average))
-
+    print('average intersection over union for other people is {}'.format(people))
+    print('average intersection over union for the hero is {}'.format(hero))
+    print('number true positives: {}, number false positives: {}, number false negatives: {}'.format(n_true_pos, n_false_pos, n_false_neg))
+    return n_true_pos, n_false_pos, n_false_neg, hero
 
 
 def score_run_centroid(gt_dir, pred_dir):

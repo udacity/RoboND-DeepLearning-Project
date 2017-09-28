@@ -53,6 +53,7 @@ from utils import data_iterator
 from utils import visualization
 from utils import scoring_utils
 from utils import sio_msgs
+from utils import model_tools
 
 import time
 
@@ -195,7 +196,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('model_file',
+    parser.add_argument('weight_file',
                         help='The model file to use for inference')
 
 
@@ -205,9 +206,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    model_path = os.path.join('..', 'data', 'weights', args.model_file)
-    model = keras.models.load_model(model_path)
-    image_hw = model.layers[0].input_shape[1]
+    model = model_tools.load_network(args.weight_file)
+    image_hw = model.layers[0].output_shape[1]
 
     if args.pred_viz: 
         overlay_plot = visualization.SideBySidePlot('Segmentation Overlay', image_hw)
