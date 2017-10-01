@@ -104,9 +104,9 @@ def combine_masks(processed_folder):
 
         base_name = os.path.basename(i)
         ind = base_name.find('cam')
-        new_fname = base_name[:ind] + '_mask'+ base_name[ind+4:]
+        new_fname = base_name[:ind] + 'mask'+ base_name[ind+4:]
 
-        dir_base = str(os.sep).join(i.split('/')[:-1])
+        dir_base = str(os.sep).join(i.split(str(os.sep))[:-1])
         misc.imsave(os.path.join(dir_base, new_fname), im)
         os.remove(i)
         os.remove(cam3[e])
