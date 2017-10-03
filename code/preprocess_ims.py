@@ -61,13 +61,15 @@ def move_labels(input_folder, output_folder, fold_id):
 
     for e,i in enumerate(cam2):
         fname_parts = i.split(os.sep)
-        cam2_base = str(fold_id) + '_' + fname_parts[-1]
+
+        # Thanks @Nitish for these fixes:)
+        cam2_base = str(fold_id) + '_' + fname_parts[-3] +'_' + fname_parts[-1]
 
         fname_parts = cam3[e].split(os.sep)
-        cam3_base = str(fold_id) + '_' + fname_parts[-1]
+        cam3_base = str(fold_id) + '_' + fname_parts[-3] +'_' + fname_parts[-1]
 
         fname_parts = cam4[e].split(os.sep)
-        cam4_base = str(fold_id) + '_' + fname_parts[-1]
+        cam4_base = str(fold_id) + '_' + fname_parts[-3] +'_' + fname_parts[-1]
 
         shutil.copy(i, os.path.join(output_folder,cam2_base))
         shutil.copy(cam3[e], os.path.join(output_folder,cam3_base))
@@ -84,7 +86,7 @@ def move_png_to_jpeg(input_folder, output_folder, fold_id):
     for i in cam1_files:
         cam1 = misc.imread(i)
         fname_parts = i.split(os.sep)
-        cam1_base = str(fold_id) + '_' +fname_parts[-3]+fname_parts[-1].split('.')[0] + '.jpeg'
+        cam1_base = str(fold_id) + '_' +fname_parts[-3] + '_' + fname_parts[-1].split('.')[0] + '.jpeg'
         misc.imsave(os.path.join(output_folder, cam1_base), cam1, format='jpeg')
 
 
